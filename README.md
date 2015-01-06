@@ -14,5 +14,4 @@ Arduino-shield that can directly plugged to an Arduino Uno.
 The Arduino firmware provides a serial interface with simple commands to transfer data 
 between a host computer and an eeprom.
 
-For the host computer a Java based GUI application is available that uses the RXTX 
-library to interface the programmer.
+Uses a simple python3 script to read/write to the EEPROM
