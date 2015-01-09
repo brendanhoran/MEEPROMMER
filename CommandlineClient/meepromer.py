@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Version : 1.4
+
 #Meeprommer commandline interface
 #By Zack Nelson
 #Project Home:
@@ -8,7 +10,13 @@
 
 # Some tweaks by @pda
 
-import serial, sys, argparse
+# Uupdated by Brendan Horan
+# https://github.com/brendanhoran
+# added better error handling
+
+
+import serial, sys, argparse, time
+
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(
@@ -49,10 +57,13 @@ parser.add_argument('-c', '--com', action='store',
 parser.add_argument('-s', '--speed', action='store', 
         type=int, default='115200', help='Com port baud, default 115200')
 
+
 def list_ports():
     from serial.tools import list_ports
+    print("Found the following serial devices :")
     for x in list_ports.comports():
         print(x[0], x[1])
+
 
 def dump_file():
     ser.flushInput()
@@ -70,6 +81,7 @@ def dump_file():
         sys.exit(1)
     fo.write(eeprom)
     fo.close()
+
 
 def verify():
     print("Verifying...")
@@ -102,6 +114,7 @@ def verify():
     else:
         print("Ok")
 
+
 def read_eeprom():
     ser.flushInput()
     ser.write(bytes("R "+format(args.address,'04x')+" "+
@@ -111,9 +124,8 @@ def read_eeprom():
     for i in range(round(args.bytes*1024/16)):
         print(ser.readline().decode('ascii').rstrip())
 
+
 def write_eeprom(paged):
-    import time
-    
     fi = open(args.file,'rb')
     fi.seek(args.offset)
     now = time.time() #start our stopwatch
@@ -134,7 +146,8 @@ def write_eeprom(paged):
             print("Error: no Ack")
             sys.exit(1)
     print("Wrote",args.bytes*1024,"bytes in","%.2f"%(time.time()-now),"seconds")
-    
+
+ 
 def unlock():
     print("Unlocking...")
     ser.flushInput()
@@ -142,48 +155,75 @@ def unlock():
     if ser.read(1) != b'%':
         print("Error: no ack")
         sys.exit(1)
+    else:
+        print("Unlocked!")
+
 
 def version():
     ser.write(b'V\n')
     print(ser.readline().decode('ascii').rstrip())
+
 
 args = parser.parse_args()
 #convert our hex strings to ints
 args.address = int(args.address,16)
 args.offset = int(args.offset,16)
 
+
+if not args.cmd:
+    print("Missing arguments :")
+    print("Com/tty port device must be set (-c)")
+    print("-h for detailed help")
+    parser.print_usage()
+    sys.exit(1)
+
+
 class DebugSerial(serial.Serial):
     def write(self, data):
+        #enable the below print statment to show debug data sent to the arduino
         #print("write: %s" % (data,))
         super().write(data)
+
 
 SERIAL_TIMEOUT = 20 #seconds
 try:
     ser = DebugSerial(args.com, args.speed, timeout=SERIAL_TIMEOUT)
 except serial.serialutil.SerialException:
     print("Error: Serial port is not valid, please select a valid port")
+    list_ports()
     sys.exit(1)
 
+
+def CleanUp():
+    ser.close()
+
+
 # It seems necessary to wait >= ~1.8 seconds for the device to respond.
-import time
 time.sleep(2)
+
 
 if args.cmd == 'version':
     version()
 elif args.cmd == 'write':
     write_eeprom(False)
+    CleanUp()
 elif args.cmd == 'write_paged':
     write_eeprom(True)
+    CleanUp()
 elif args.cmd == 'read':
     read_eeprom()
+    CleanUp()
 elif args.cmd == 'dump':
     dump_file()
+    CleanUp()
 elif args.cmd == 'verify':
     verify()
+    CleanUp()
 elif args.cmd == 'unlock':
-    unlock();
+    unlock()
+    CleanUp()
 elif args.cmd == 'list':
     list_ports()
-    
-ser.close()
-sys.exit(0)
+    CleanUp()
+else:
+    parser.print_usage()
