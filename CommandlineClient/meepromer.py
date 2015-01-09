@@ -10,7 +10,7 @@
 
 # Some tweaks by @pda
 
-# Uupdated by Brendan Horan
+# Updated by Brendan Horan
 # https://github.com/brendanhoran
 # added better error handling
 
