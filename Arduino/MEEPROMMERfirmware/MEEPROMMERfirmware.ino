@@ -8,6 +8,10 @@
  * $Date: 2013/05/05 11:01:54 $
  * $Revision: 1.3 $
  *
+ * Updates for Python3 CLI client, Brendan Horan
+ * $Date 2015/01/09
+ * $Revision: 1.4 $
+ *
  * This software is freeware and can be modified, reused or thrown away without any restrictions.
  *
  * Use this code at your own risk. I'm not responsible for any bad effect or damages caused by this software!!!
