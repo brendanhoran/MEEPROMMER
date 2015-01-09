@@ -53,7 +53,7 @@ parser.add_argument('-p', '--page_size', action='store', default='32',
 parser.add_argument('-f', '--file', action='store',
         help='Name of data file')
 parser.add_argument('-c', '--com', action='store', 
-        default='COM5', help='Com port address')
+        default='COM5', help='Com/tty port address')
 parser.add_argument('-s', '--speed', action='store', 
         type=int, default='115200', help='Com port baud, default 115200')
 
